@@ -1,35 +1,61 @@
-import {getSlicedImages} from "./getSlicedImages.js";
-import {createImage, addCustomOrderProperty, shuffleArray} from "./util/util.js";
+import {drawDisOrganized} from "./drawDisOrganized.js";
+import {createImage, drawOrganized, addCustomOrderProperty, assignToGLOBAL_ELEMENT, assignToGLOBAL_NEW_GAME, shuffleArray} from "./util/util.js";
 
-const imageInputElement: HTMLInputElement = document.querySelector('#inputImage')
 
-imageInputElement?.addEventListener('change', fileHandler);
+console.log('fffrom script');
+
+let global_image_file;
+
+fetch(`https://picsum.photos/1000`)
+    .then(v => v.blob())
+    .then(v => {
+        global_image_file = v;
+        drawPuzzle(v)
+
+    })
+
+document.querySelector('#numberOfSlice')
+    .addEventListener('change', e => drawPuzzle(global_image_file));
+
+document.querySelector('#inputImage')
+    .addEventListener('change', fileHandler);
+
 
 function fileHandler(e: Event): void {
+
 
     if (!(e.target instanceof HTMLInputElement)) {
         return;
     }
 
+    console.log('file', e.target.files[0])
+
+    global_image_file = e.target.files[0];
+
     createPreviewImage(e.target.files[0]);
-    getSlicedImages(e.target.files[0], 4)
-        .then(v => v.map((v, i) => {v.style.padding = '1ch'; return v;}))
-        .then(v => addCustomOrderProperty(v))
-        .then(v => shuffleArray(v))
-        .then(ImageList => ImageList.forEach((v: Node) => {document.body.append(v)}));
+    drawPuzzle(e.target.files[0])
 
 }
 
 
 
+function drawPuzzle(blob: Blob, SLICE_NUMBER: number = 3) {
+
+    assignToGLOBAL_NEW_GAME(true);
+
+    document.querySelector('#organized').replaceChildren();
+    document.querySelector('#disOrganized').replaceChildren();
+
+    const SLICE_NUMBER_IN_ROOT = Number((document.querySelector('#numberOfSlice') as HTMLInputElement).value);
+
+    drawDisOrganized(blob, SLICE_NUMBER_IN_ROOT, '#disOrganized')
+        .then(v => drawOrganized(SLICE_NUMBER_IN_ROOT))
+
+    createPreviewImage(blob);
+}
 
 
-
-
-
-
-
-function createPreviewImage(file: File): HTMLImageElement {
+function createPreviewImage(file: Blob): HTMLImageElement {
     const PREVIEW_IMAGE_ID = 'preview';
     const PREVIEW_IMAGE_SIZE = '40';
 
@@ -48,23 +74,8 @@ function createPreviewImage(file: File): HTMLImageElement {
 
 }
 
-
-function isPng(magicString): boolean {
-    return magicString === 'PNG'
-}
 function logger(value: any) {
     console.log(value);
     return value;
 }
 
-
-
-/*
-        e.target.files[0].arrayBuffer()
-            .then(v => new Uint8Array(v))
-            .then(v => logger(v))
-            .then(v => v.slice(1, 4))
-            .then(v => new TextDecoder().decode(v))
-            .then(v => isPng(v))
-            .then(console.log)
-*/
