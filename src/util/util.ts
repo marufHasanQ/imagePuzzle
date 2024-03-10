@@ -11,13 +11,10 @@ function shuffleArray(array) {
 }
 
 function firework(time) {
-    console.log('GLOBAL_NEW_GAME', GLOBAL_NEW_GAME);
-    if (!GLOBAL_NEW_GAME) {
-        return;
-    }
+
     // @ts-expect-error
     import('https://unpkg.com/fireworks-js@2.x/dist/index.umd.js')
-        .then(v => {
+        .then(_ => {
 
             const customStyle = {
                 width: '80vw',
@@ -26,7 +23,9 @@ function firework(time) {
                 zIndex: '1',
                 background: 'transparent'
             }
+
             const fireworkDiv = document.createElement('div');
+
             document.querySelector('#wrapper').before(fireworkDiv);
 
             Object.keys(customStyle).forEach((v) => (fireworkDiv as HTMLElement).style[v] = customStyle[v]);
@@ -35,10 +34,14 @@ function firework(time) {
             const fireworkObj = new Fireworks.default(fireworkDiv);
 
             fireworkObj.start();
-            setTimeout(v => {fireworkObj.stop(); GLOBAL_NEW_GAME = false; fireworkDiv.remove()}, time * 1000);
+            //stops firework when user clicks
+            fireworkDiv.addEventListener('click', e => {
+                fireworkObj.stop(); fireworkDiv.remove();
+            })
 
         })
 }
+
 function createImage(file: Blob) {
 
     const img = new Image();
@@ -48,6 +51,7 @@ function createImage(file: Blob) {
     img.addEventListener("load", () => {
         URL.revokeObjectURL(url);
     });
+
     return img;
 
 }
@@ -57,9 +61,6 @@ function addCustomOrderProperty(arrayOfObject: object[]) {
 
 function drawOrganized(SLICE_NUMBER_IN_ROOT: number, organizedSelector: string = '#organized') {
 
-
-    document.querySelectorAll('.grid')
-        .forEach(v => (v as HTMLElement).style.gridTemplateColumns = `repeat(${SLICE_NUMBER_IN_ROOT}, auto)`)
     const width = (document.querySelector(organizedSelector).clientWidth - 30) / SLICE_NUMBER_IN_ROOT;
     console.log('organized', document.querySelector(organizedSelector).clientWidth - 30, 'organized width', width);
     const organized = Array(SLICE_NUMBER_IN_ROOT ** 2).fill(0)
@@ -78,7 +79,7 @@ function drawOrganized(SLICE_NUMBER_IN_ROOT: number, organizedSelector: string =
         div.style.height = width.toString() + 'px';
 
         div.style.background = 'teal';
-        div.addEventListener('click', e => {swapElements(e.target, GLOBAL_ELEMENT); assignToGLOBAL_ELEMENT(null); checkResult();});
+        div.addEventListener('click', e => {swapElements(e.target, GLOBAL_ELEMENT); checkResult();});
         return div;
     }
 }
@@ -105,17 +106,21 @@ function assignToGLOBAL_ELEMENT(element: Node) {
     GLOBAL_ELEMENT = element;
 }
 
+function getGLOBAL_ELEMENT(): HTMLDivElement | null {
+    return GLOBAL_ELEMENT;
+}
 function assignToGLOBAL_NEW_GAME(isTrue: boolean) {
     GLOBAL_NEW_GAME = isTrue;
 }
 function checkResult() {
 
     const validity = [...document.querySelector('#organized').children].every((v, i) => (v as any).customOrderProperty == i);
-    if (validity) {
+    if (validity && GLOBAL_NEW_GAME) {
+        GLOBAL_NEW_GAME = false;
         firework(5);
     }
 
 }
 
 
-export {addCustomOrderProperty, createImage, drawOrganized, shuffleArray, assignToGLOBAL_NEW_GAME, assignToGLOBAL_ELEMENT}
+export {addCustomOrderProperty, createImage, drawOrganized, shuffleArray, assignToGLOBAL_NEW_GAME, assignToGLOBAL_ELEMENT, getGLOBAL_ELEMENT}

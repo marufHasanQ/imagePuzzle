@@ -1,15 +1,27 @@
-import {createImage, addCustomOrderProperty, assignToGLOBAL_ELEMENT, shuffleArray} from "./util/util.js";
+import {createImage, addCustomOrderProperty, assignToGLOBAL_ELEMENT, getGLOBAL_ELEMENT, shuffleArray} from "./util/util.js";
 
-function drawDisOrganized(file, SLICE_NUMBER_IN_ROOT, disOrganizedSelector: string) {
-
-    document.querySelectorAll('.grid')
-        .forEach(v => (v as HTMLElement).style.gridTemplateColumns = `repeat(${SLICE_NUMBER_IN_ROOT},auto)`)
+function drawDisOrganized(file: Blob, SLICE_NUMBER_IN_ROOT: number, disOrganizedSelector: string) {
 
     const width = (document.querySelector(disOrganizedSelector).clientWidth - 30) / SLICE_NUMBER_IN_ROOT;
     console.log('disOrganizedd', document.querySelector(disOrganizedSelector).clientWidth - 30, 'width', width);
 
     return getSlicedImages(file, SLICE_NUMBER_IN_ROOT)
-        .then(v => v.map((v, i) => {v.addEventListener('click', e => assignToGLOBAL_ELEMENT(e.target as Node)); return v;}))
+        .then(v => v.map((v, i) => {
+            v.addEventListener('click', e => {
+
+                const previousClickedElement = getGLOBAL_ELEMENT();
+
+                if (previousClickedElement) {
+                    previousClickedElement.style.filter = '';
+                }
+
+                (e.target as HTMLImageElement).style.filter = 'hue-rotate(180deg) invert(0.1)';
+                assignToGLOBAL_ELEMENT(e.target as Node);
+
+            });
+
+            return v;
+        }))
 
         .then(v => v.map(v => {v.style.width = width.toString() + 'px'; return v;}))
         .then(v => addCustomOrderProperty(v))
@@ -19,13 +31,13 @@ function drawDisOrganized(file, SLICE_NUMBER_IN_ROOT, disOrganizedSelector: stri
 }
 
 
-function getSlicedImages(file: File, sliceNumberInRoot: number = 3): Promise<HTMLImageElement[]> {
+function getSlicedImages(file: Blob, sliceNumberInRoot: number = 3): Promise<HTMLImageElement[]> {
 
     return createSlicedCanvases(file, sliceNumberInRoot)
         .then(canvasList => convertToImageList(canvasList))
 
 
-    function createSlicedCanvases(file: File, sliceNumberInRoot: number): Promise<HTMLCanvasElement[]> {
+    function createSlicedCanvases(file: Blob, sliceNumberInRoot: number): Promise<HTMLCanvasElement[]> {
 
         const imageElement: HTMLImageElement = createImage(file);
 
@@ -47,7 +59,7 @@ function getSlicedImages(file: File, sliceNumberInRoot: number = 3): Promise<HTM
 
         function createCanvasList(sliceNumberInRoot: number, sourceSliceWidth: number, sourceSliceHeight: number): HTMLCanvasElement[] {
             let canvasList: HTMLCanvasElement[] = [];
-            const CANVAS_SIZE = 100;
+            const CANVAS_SIZE = 300;
             const coordinates = Array(sliceNumberInRoot).fill(0);
 
             coordinates.forEach((v, oi) => coordinates.forEach((v, ii) => {

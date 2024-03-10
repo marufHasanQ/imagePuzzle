@@ -1,5 +1,5 @@
 import {drawDisOrganized} from "./drawDisOrganized.js";
-import {createImage, drawOrganized, addCustomOrderProperty, assignToGLOBAL_ELEMENT, assignToGLOBAL_NEW_GAME, shuffleArray} from "./util/util.js";
+import {createImage, drawOrganized, assignToGLOBAL_ELEMENT, assignToGLOBAL_NEW_GAME} from "./util/util.js";
 
 
 console.log('fffrom script');
@@ -9,13 +9,15 @@ let global_image_file;
 fetch(`https://picsum.photos/1000`)
     .then(v => v.blob())
     .then(v => {
+        const SLICE_NUMBER_IN_ROOT = Number((document.querySelector('#numberOfSlice') as HTMLInputElement).value)
         global_image_file = v;
-        drawPuzzle(v)
-
+        drawBackgroundImage(v);
+        drawPuzzle(v, SLICE_NUMBER_IN_ROOT);
+        createPreviewImage(v);
     })
 
 document.querySelector('#numberOfSlice')
-    .addEventListener('change', e => drawPuzzle(global_image_file));
+    .addEventListener('change', e => drawPuzzle(global_image_file, (e.target as HTMLInputElement).valueAsNumber));
 
 document.querySelector('#inputImage')
     .addEventListener('change', fileHandler);
@@ -23,39 +25,51 @@ document.querySelector('#inputImage')
 
 function fileHandler(e: Event): void {
 
-
     if (!(e.target instanceof HTMLInputElement)) {
         return;
     }
 
-    console.log('file', e.target.files[0])
-
     global_image_file = e.target.files[0];
+    drawBackgroundImage(e.target.files[0]);
 
+
+    const SLICE_NUMBER_IN_ROOT = Number((document.querySelector('#numberOfSlice') as HTMLInputElement).value)
+    drawPuzzle(e.target.files[0], SLICE_NUMBER_IN_ROOT)
     createPreviewImage(e.target.files[0]);
-    drawPuzzle(e.target.files[0])
 
 }
 
 
 
-function drawPuzzle(blob: Blob, SLICE_NUMBER: number = 3) {
+function drawPuzzle(blob: Blob, SLICE_NUMBER_IN_ROOT: number = 3) {
 
-    assignToGLOBAL_NEW_GAME(true);
-
+    // remove any previous puzzle
     document.querySelector('#organized').replaceChildren();
     document.querySelector('#disOrganized').replaceChildren();
 
-    const SLICE_NUMBER_IN_ROOT = Number((document.querySelector('#numberOfSlice') as HTMLInputElement).value);
+    // reinitialize that this is a game
+    assignToGLOBAL_NEW_GAME(true);
+
+    assignToGLOBAL_ELEMENT(null);
+
+    document.querySelectorAll('.grid')
+        .forEach(v => (v as HTMLElement).style.gridTemplateColumns = `repeat(${SLICE_NUMBER_IN_ROOT}, auto)`)
 
     drawDisOrganized(blob, SLICE_NUMBER_IN_ROOT, '#disOrganized')
-        .then(v => drawOrganized(SLICE_NUMBER_IN_ROOT))
+        .then(_ => drawOrganized(SLICE_NUMBER_IN_ROOT))
 
-    createPreviewImage(blob);
+}
+
+function drawBackgroundImage(image: Blob) {
+
+    const url = URL.createObjectURL(image);
+    document.body.style.backgroundImage = 'url(' + url + ')';
+    document.body.addEventListener('load', e => URL.revokeObjectURL(url));
 }
 
 
 function createPreviewImage(file: Blob): HTMLImageElement {
+
     const PREVIEW_IMAGE_ID = 'preview';
     const PREVIEW_IMAGE_SIZE = '40';
 
@@ -72,10 +86,5 @@ function createPreviewImage(file: Blob): HTMLImageElement {
     document.body.append(img);
     return img;
 
-}
-
-function logger(value: any) {
-    console.log(value);
-    return value;
 }
 
