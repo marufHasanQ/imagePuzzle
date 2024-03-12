@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Image Filter</title>
+        <title>Image Puzzle</title>
         <style type="text/css" media="">
 
 *{
@@ -13,16 +13,17 @@ html{
 
     scrollbar-color: grey transparent;
     scrollbar-width: thin;
+    height: 100%;
 }
 
 .darkmode{
-    background: black;
     color: white;
 }
 
-body{
-    backdrop-filter: blur(10px);
+body {
     margin: 0px;
+    height: 100%;
+    backdrop-filter: blur(10px);
 }
 
 .grid{
@@ -38,30 +39,68 @@ body{
     gap: 2ch;
 }
 
-/*
-#disOrganized img{
-    width: 90%; 
+header {
+	display: grid;
+	background: black;
+	box-shadow: 0px 1px 1px 0px black;
+	padding: 0.5rem;
+	grid-auto-flow: column;
+	grid-template-columns: 1fr auto;
+	justify-items: center;
+
+button {
+        background: transparent;
+        font-size: 3ch;
+        color: white;
+        border: 0;
+    }
 }
-#organized div{
-    width: 100px; 
+
+
+
+#mainpopover {
+    inset: unset;
+    inset-block-start: 3ch;
+    inset-inline-end: 0;
+    border-radius: 4px;
+
 }
-*/
         </style>
     </head>
     <body class='darkmode'>
+        <header>
 
+            <h1> .puzzle </h1>
+            <button popovertarget="mainpopover" > ☰ </button>
+            <!--
+            <button popovertarget="mainpopover" onclick="document.querySelector('dialg').show()">menu</button>
+            -->
+        </header>
+
+        <side-bar id ="mainpopover" popover>
+            <ul>
+                <li>
         <input type="file" accept="image/*" id="inputImage" name="inputImage">
-        
+                </li>
+                <li>
         <label for="numberOfSlice" > Difficulty </label>
         <input type="range"  value="3" min="2" max="5" id="numberOfSlice" name="numberOfSlice">
+                </li>
+                <li>
+            <button onclick="document.querySelector('dialog').showModal()" > answer reveal </button>
+                </li>
+            </ul>
+
+        </side-bar>
+        <dialog id="imageDialog">
+            
+        </dialog>
+
         <div id="wrapper">
         <div class="grid" id='disOrganized' >
-            
         </div>
         <div class="grid" id='organized' >
-            
         </div>
-            
         </div>
 
     </body>
