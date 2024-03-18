@@ -6,10 +6,16 @@ function drawDisOrganized(file, SLICE_NUMBER_IN_ROOT, disOrganizedSelector) {
         .then(v => v.map((v, i) => {
         v.addEventListener('click', e => {
             const previousClickedElement = getGLOBAL_ELEMENT();
+            const currentClickedElement = e.target;
+            if (previousClickedElement == currentClickedElement) {
+                previousClickedElement.style.filter = '';
+                assignToGLOBAL_ELEMENT(null);
+                return;
+            }
             if (previousClickedElement) {
                 previousClickedElement.style.filter = '';
             }
-            e.target.style.filter = 'hue-rotate(180deg) invert(0.1)';
+            currentClickedElement.style.filter = 'hue-rotate(180deg) invert(0.2)';
             assignToGLOBAL_ELEMENT(e.target);
         });
         return v;

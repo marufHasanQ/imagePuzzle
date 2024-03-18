@@ -10,12 +10,20 @@ function drawDisOrganized(file: Blob, SLICE_NUMBER_IN_ROOT: number, disOrganized
             v.addEventListener('click', e => {
 
                 const previousClickedElement = getGLOBAL_ELEMENT();
+                const currentClickedElement = e.target as HTMLImageElement;
+
+                if (previousClickedElement == currentClickedElement) {
+                    previousClickedElement.style.filter = '';
+                    assignToGLOBAL_ELEMENT(null);
+                    return;
+                }
 
                 if (previousClickedElement) {
                     previousClickedElement.style.filter = '';
                 }
 
-                (e.target as HTMLImageElement).style.filter = 'hue-rotate(180deg) invert(0.1)';
+
+                currentClickedElement.style.filter = 'hue-rotate(180deg) invert(0.2)';
                 assignToGLOBAL_ELEMENT(e.target as Node);
 
             });
